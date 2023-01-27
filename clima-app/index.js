@@ -1,4 +1,8 @@
-import { getInput, inquirerMenu, pause } from "./helpers/inquirer.js";
+import * as dotenv from 'dotenv';
+dotenv.config();
+
+
+import { getInput, inquirerMenu, listPlaces, pause } from "./helpers/inquirer.js";
 import Searchs from "./models/searchs.js";
 
 const main = async () => {
@@ -9,34 +13,52 @@ const main = async () => {
   do {
 // Show Menu
     opt = await inquirerMenu();
-
+ 
     switch (opt) {
       //Search City
       case 1:
         // Show message
-        const place = await getInput('City: ');
-        await searchs.city(place);
-
+        const inputCity = await getInput('City: ');
+        
         // Search places
+        const places = await searchs.city(inputCity);
+
 
         // Select place
 
+        const idPlace = await listPlaces(places)
+
+        if (idPlace === '0') continue;
+
+        //Getting info to fill info
+        const selectedPlace = places.find( place => place.id === idPlace)
+
         // weather
 
-        // Show results
+        const weather = await searchs.searchWeather(selectedPlace.lat, selectedPlace.lng )
+        // Save in history
+          searchs.addhistory(selectedPlace.name)
 
+        // Show results
+        console.clear();
         console.log('\n Information \n');
-        console.log('City: ');
-        console.log('Lat: ');
-        console.log('Lng: ');
-        console.log('Temp: ');
-        console.log('Min: ');
-        console.log('Max: ');
+        console.log('City: ', selectedPlace.name);
+        console.log('Lng: ', selectedPlace.lng);
+        console.log('Lat: ', selectedPlace.lat);
+        console.log('Temp: ', weather.temp);
+        console.log('Desc: ', weather.desc);
+        console.log('Min: ', weather.min);
+        console.log('Max: ', weather.max);
 
       break;
 
       case 2:
         //Show history
+
+        searchs.capitalizedHistory.forEach((place, i) => {
+          const idx = `${i + 1}.`.magenta;
+          console.log(`${idx} ${place}`);
+        });
 
       break;
 
